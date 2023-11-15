@@ -4,7 +4,6 @@ import { AuthService } from './auth.service';
 import { LoginAuthDto } from './dto/login-auth.dto';
 import { RegisterAuthDto } from './dto/register-auth.dto';
 
-
 @Controller({
     path: 'auth',
     version: Constants.API_VERSION_1

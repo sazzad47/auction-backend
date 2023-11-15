@@ -1,4 +1,4 @@
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import * as bodyParser from 'body-parser';
 import { AppModule } from './app.module';
@@ -20,6 +20,10 @@ async function bootstrap() {
     app.use(bodyParser.urlencoded({ limit: '100mb', extended: true }));
 
     app.setGlobalPrefix(Constants.API);
+
+    app.enableVersioning({
+        type: VersioningType.URI
+    });
 
     app.useGlobalPipes(new ValidationPipe());
 
