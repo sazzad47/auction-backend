@@ -34,7 +34,6 @@ export class UsersRepository<UsersDocument extends Users> {
         try {
             return await this.model.findOne({
                 email: email,
-                isDeleted: false,
             });
         } catch (error) {
             throw new Error(`Error finding entity by email address: ${error.message}`);

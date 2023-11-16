@@ -56,3 +56,11 @@ export class ResponseUtils {
         return responseResult;
     };
 }
+
+import { HttpException, HttpStatus } from '@nestjs/common';
+
+export class EmailAlreadyExistsException extends HttpException {
+  constructor() {
+    super('Email Already Exists', HttpStatus.BAD_REQUEST);
+  }
+}

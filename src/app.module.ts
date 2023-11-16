@@ -8,6 +8,7 @@ import JwtConfigService from './core/jwt/jwt-config.service';
 import { UsersSchema } from './modules/users/schema/users.schema';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { ItemModule } from './modules/items/item.module';
 
 @Module({
     imports: [
@@ -21,6 +22,7 @@ import { AuthModule } from './modules/auth/auth.module';
         }),
         AuthModule,
         UsersModule,
+        ItemModule,
     
     ],
     controllers: [AppController],

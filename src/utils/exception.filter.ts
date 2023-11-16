@@ -30,9 +30,9 @@ export class AllExceptionFilter implements ExceptionFilter {
 				timestamp: new Date().toISOString(),
 				path: request.routerPath,
 			},
-			...message,
+			message: exception instanceof HttpException && message,
 		};
-
+	
 		this.logMessage(request, message, status, exception);
 
 		response.status(status).send(responseData);

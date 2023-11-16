@@ -6,7 +6,7 @@ import {
     HttpException,
     HttpStatus,
 } from '@nestjs/common';
-import { ResponseUtils } from 'src/utils/response.utils';
+import { EmailAlreadyExistsException, ResponseUtils } from 'src/utils/response.utils';
 import JwtHelper from '../../core/jwt/jwt.helper';
 import { Constants } from '../../utils/constants';
 import { LoginAuthDto } from './dto/login-auth.dto';
@@ -68,6 +68,8 @@ export class AuthService {
         const isEmailExists = await this.usersRepository.findByEmailAddress(email);
         if (isEmailExists) {
             throw new HttpException('Email Already Exists', HttpStatus.BAD_REQUEST);
+            // return ResponseUtils.errorResponseHandler(400, 'Email Already Exists');
+            // throw new EmailAlreadyExistsException();
         }
         const createUserDto = {
             email,
