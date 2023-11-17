@@ -1,14 +1,11 @@
 import {
     Injectable,
-    NotFoundException,
-    UnauthorizedException,
     InternalServerErrorException,
     HttpException,
     HttpStatus,
 } from '@nestjs/common';
-import { EmailAlreadyExistsException, ResponseUtils } from 'src/utils/response.utils';
+import { ResponseUtils } from 'src/utils/response.utils';
 import JwtHelper from '../../core/jwt/jwt.helper';
-import { Constants } from '../../utils/constants';
 import { LoginAuthDto } from './dto/login-auth.dto';
 import { RegisterAuthDto } from './dto/register-auth.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -32,13 +29,12 @@ export class AuthService {
         const data = await this.usersRepository.findOneByFilterQuery({ email: email });
 
         if (!data) {
-            throw new NotFoundException(Constants.NOT_FOUND);
+            throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
         }
 
         const resData = await this.authenticateUser(password, data);
         if (resData == null) {
-            // handle unauth
-            throw new UnauthorizedException(Constants.UNAUTH_REQ);
+            throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
         }
         return resData;
     }
@@ -68,8 +64,6 @@ export class AuthService {
         const isEmailExists = await this.usersRepository.findByEmailAddress(email);
         if (isEmailExists) {
             throw new HttpException('Email Already Exists', HttpStatus.BAD_REQUEST);
-            // return ResponseUtils.errorResponseHandler(400, 'Email Already Exists');
-            // throw new EmailAlreadyExistsException();
         }
         const createUserDto = {
             email,
