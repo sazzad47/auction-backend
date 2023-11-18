@@ -1,4 +1,4 @@
-import { IsNotEmpty } from "class-validator";
+import { IsNotEmpty, IsOptional } from "class-validator";
 
 export class CreateItemDto {
     @IsNotEmpty()
@@ -11,5 +11,8 @@ export class CreateItemDto {
     startTime: string;
 
     @IsNotEmpty()
-    timeWindow: string;
+    endTime: string;
+
+    @IsOptional()
+    sold?: boolean
 }

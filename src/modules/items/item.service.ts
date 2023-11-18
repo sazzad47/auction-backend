@@ -14,9 +14,9 @@ export class ItemService {
 
     private readonly ItemRepository = new ItemRepository(this.ItemModel);
 
-    async create(dto: CreateItemDto): Promise<Item> {
+    async create(dto: CreateItemDto, userId: string): Promise<Item> {
         try {
-            const data = await this.ItemRepository.createEntity(dto);
+            const data = await this.ItemRepository.createEntity(dto, userId);
             if (!data) {
                 throw new BadRequestException(Constants.CREATE_FAILED);
             }
@@ -53,5 +53,4 @@ export class ItemService {
         }
         return ResponseUtils.successResponseHandler(200, 'Data updated successfully', 'data', data);
     }
-
 }

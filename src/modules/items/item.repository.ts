@@ -6,10 +6,11 @@ import { UpdateItemDto } from './dto/update-item.dto';
 export class ItemRepository<ItemDocument extends Item> {
     constructor(private readonly model: Model<ItemDocument>) {}
 
-    async createEntity(data: CreateItemDto): Promise<Item> {
+    async createEntity(data: CreateItemDto, userId: string): Promise<Item> {
         const createdEntity = new this.model({
             ...data,
             _id: new Types.ObjectId(),
+            createdBy: userId,
         });
         return await createdEntity.save();
     }
@@ -19,7 +20,6 @@ export class ItemRepository<ItemDocument extends Item> {
             return null;
         }
 
-        // return await this.model.findById(id);
         return await this.model.findOne({ _id: id, isDeleted: false });
     }
 
