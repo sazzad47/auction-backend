@@ -1,9 +1,5 @@
-import {
-    Injectable,
-    InternalServerErrorException,
-    HttpException,
-    HttpStatus,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException, HttpException, HttpStatus } from '@nestjs/common';
+import { Response } from 'express';
 import { ResponseUtils } from 'src/utils/response.utils';
 import JwtHelper from '../../core/jwt/jwt.helper';
 import { LoginAuthDto } from './dto/login-auth.dto';
@@ -24,7 +20,7 @@ export class AuthService {
 
     private readonly usersRepository = new UsersRepository(this.usersModel);
 
-    async login(dto: LoginAuthDto): Promise<any> {
+    async login(dto: LoginAuthDto, res: Response): Promise<any> {
         const { email, password } = dto;
         const data = await this.usersRepository.findOneByFilterQuery({ email: email });
 
@@ -32,33 +28,46 @@ export class AuthService {
             throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
         }
 
-        const resData = await this.authenticateUser(password, data);
+        const resData = await this.authenticateUser(password, data, res);
         if (resData == null) {
             throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
         }
         return resData;
     }
 
-    async authenticateUser(password: string, user: Users): Promise<any> {
+    async authenticateUser(password: string, user: Users, res: Response): Promise<any> {
         const { password: passwordHash, ...entityWithoutPassword } = user;
 
         const matched = await CryptoUtils.compare(password, passwordHash);
         if (matched) {
-            const token = this.jwtHelper.generateToken(
+            const accessToken = this.jwtHelper.generateAccessToken(
                 {
                     userId: entityWithoutPassword._id,
                 },
-                '7d',
+                '1d',
             );
+            const refreshToken = this.jwtHelper.generateAccessToken(
+                {
+                    userId: entityWithoutPassword._id,
+                },
+                '30d',
+            );
+
+            res.cookie('refreshtoken', refreshToken, {
+                httpOnly: true,
+                path: '/api/v1/auth/access-token',
+                maxAge: 30 * 24 * 60 * 60 * 1000, // 30days
+            });
+
             return {
-                token: token,
+                token: accessToken,
                 user: entityWithoutPassword,
             };
         }
         return null;
     }
 
-    async register(dto: RegisterAuthDto): Promise<Users | Error> {
+    async register(dto: RegisterAuthDto, res: Response): Promise<Users | Error> {
         const { email, password } = dto;
 
         const isEmailExists = await this.usersRepository.findByEmailAddress(email);
@@ -75,34 +84,57 @@ export class AuthService {
         if (data instanceof Error) {
             return new InternalServerErrorException(data);
         } else {
-            const loginData = await this.login({
-                email: email,
-                password: password,
-            });
+            const loginData = await this.login(
+                {
+                    email: email,
+                    password: password,
+                },
+                res,
+            );
 
             return ResponseUtils.successResponseHandler(201, 'User registered successfully!', 'data', loginData);
         }
     }
 
-    async validateRequest(req: any): Promise<boolean> {
+    async accessToken(req: any): Promise<any> {
         try {
-            const bearerToken = req.headers.authorization;
-            const bearer = 'Bearer ';
-            if (!bearerToken || !bearerToken.startsWith(bearer)) {
-                return false;
-            }
-            const token = bearerToken.replace(bearer, '');
-            const jwtPayload = this.jwtHelper.verifyToken(token);
-            const data = await this.usersRepository.findOneEntity(jwtPayload.userId);
-            if (!data || data instanceof Error) {
-                return false;
+            const token = req.cookies.refreshtoken;
+            if (!token) {
+                throw new HttpException('Please login', HttpStatus.BAD_REQUEST);
             }
 
-            req.data = data;
+            const jwtPayload = await this.jwtHelper.verifyAccessToken(token);
+            const user = await this.usersRepository.findOneEntity(jwtPayload.userId);
+            if (!user || user instanceof Error) {
+                throw new HttpException('Invalid request', HttpStatus.BAD_REQUEST);
+            }
 
-            return true;
+            const accessToken = this.jwtHelper.generateAccessToken(
+                {
+                    userId: jwtPayload.userId,
+                },
+                '1d',
+            );
+
+            const { password, ...entityWithoutPassword } = user;
+
+            const data = {
+                token: accessToken,
+                user: entityWithoutPassword,
+            };
+
+            return ResponseUtils.successResponseHandler(201, 'Token generated successfully!', 'data', data);
         } catch (e) {
-            return false;
+            throw new HttpException('Invalid request', HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    async logout(res: Response): Promise<any> {
+        try {
+            res.clearCookie('refreshtoken', { path: '/api/v1/auth/access-token' });
+            return ResponseUtils.successResponseHandler(200, 'Logged out!');
+        } catch (err) {
+            throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
         }
     }
 }

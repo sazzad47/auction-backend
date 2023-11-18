@@ -24,7 +24,7 @@ export class UsersRepository<UsersDocument extends Users> {
             if (!mongoose.Types.ObjectId.isValid(id)) {
                 return null;
             }
-            return await this.model.findOne({ _id: id });
+            return await this.model.findOne({ _id: id }).lean();
         } catch (error) {
             throw new Error(`Error finding entity: ${error.message}`);
         }
