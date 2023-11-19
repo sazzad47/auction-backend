@@ -10,6 +10,7 @@ import { UsersSchema } from './modules/users/schema/users.schema';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ItemModule } from './modules/items/item.module';
+import { DepositModule } from './modules/deposits/deposit.module';
 
 @Module({
     imports: [
@@ -25,6 +26,7 @@ import { ItemModule } from './modules/items/item.module';
         AuthModule,
         UsersModule,
         ItemModule,
+        DepositModule,
     
     ],
     controllers: [AppController],

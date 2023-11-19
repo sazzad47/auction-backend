@@ -5,7 +5,7 @@ export class CreateItemDto {
     name: string;
 
     @IsNotEmpty()
-    startPrice: string;
+    startPrice: number;
 
     @IsNotEmpty()
     startTime: string;
