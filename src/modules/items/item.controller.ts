@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards, Req } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards, Req, Query } from '@nestjs/common';
 import { Constants } from 'src/utils/constants';
 import { AuthGuard } from 'src/core/guards/auth.guard';
 import { ItemService } from './item.service';
@@ -16,7 +16,7 @@ export class ItemController {
 
     @Get('/get')
     @UseGuards(AuthGuard)
-    findAll() {
-        return this.service.findAll();
+    findAll(@Query() query: any) {
+        return this.service.findAll(query);
     }
 }

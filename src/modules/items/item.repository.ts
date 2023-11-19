@@ -27,7 +27,38 @@ export class ItemRepository<ItemDocument extends Item> {
         return await this.model.findByIdAndUpdate(id, data, { new: true });
     }
 
-    async findAll(): Promise<Item[]> {
-        return await this.model.find({ isDeleted: false });
+    async findAll(
+        sold?: boolean,
+        page: number = 1,
+        limit: number = 10,
+    ): Promise<{ items: Item[]; totalCount: number }> {
+        const query: Record<string, any> = {};
+
+        if (sold !== undefined) {
+            query.sold = sold;
+        }
+
+        query.startTime = { $lte: new Date() };
+
+        const items = await this.model
+            .find(query)
+            .skip((page - 1) * limit)
+            .limit(limit)
+            .exec();
+        const totalCount = await this.model.countDocuments(query);
+
+        return { items, totalCount };
+    }
+
+    async checkAndUpdateSoldStatus() {
+        const currentTime = new Date();
+        const itemsToUpdate = await this.model.find({
+            endTime: { $lte: currentTime },
+            sold: false,
+        });
+
+        if (itemsToUpdate.length > 0) {
+            await this.model.updateMany({ _id: { $in: itemsToUpdate.map((item) => item._id) } }, { sold: true });
+        }
     }
 }

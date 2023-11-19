@@ -7,6 +7,7 @@ import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
 import { Constants } from 'src/utils/constants';
 import { ResponseUtils } from 'src/utils/response.utils';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class ItemService {
@@ -26,12 +27,18 @@ export class ItemService {
         }
     }
 
-    async findAll(): Promise<Item[]> {
-        const data = await this.ItemRepository.findAll();
+    async findAll(query: any): Promise<Item[]> {
+        const { sold, page, limit } = query;
+        const data = await this.ItemRepository.findAll(sold, page, limit);
         if (!data) {
             throw new NotFoundException(Constants.NOT_FOUND);
         }
         return ResponseUtils.successResponseHandler(200, 'Data fetched successfully', 'data', data);
+    }
+
+    @Cron('* * * * * *')
+    async checkAndUpdateSoldStatus(): Promise<void> {
+        return await this.ItemRepository.checkAndUpdateSoldStatus();
     }
 
     async findOne(id: string): Promise<Item | null> {

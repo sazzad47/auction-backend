@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
+import { ScheduleModule } from '@nestjs/schedule';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -20,6 +21,7 @@ import { ItemModule } from './modules/items/item.module';
         JwtModule.registerAsync({
             useClass: JwtConfigService
         }),
+        ScheduleModule.forRoot(),
         AuthModule,
         UsersModule,
         ItemModule,
