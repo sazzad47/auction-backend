@@ -41,23 +41,25 @@ export class ItemService {
         return await this.ItemRepository.checkAndUpdateSoldStatus();
     }
 
+    async findHighestBidAmount(itemId: string): Promise<number | null> {
+        try {
+            const highestBidAmount = await this.ItemRepository.findHighestBidAmount(itemId);
+            return highestBidAmount;
+        } catch (err) {
+            throw new NotFoundException(Constants.NOT_FOUND);
+        }
+    }
+
     async findOne(id: string): Promise<Item | null> {
         const data = await this.ItemRepository.findOneEntity(id);
         if (!data) {
             throw new NotFoundException(Constants.NOT_FOUND);
         }
-        return ResponseUtils.successResponseHandler(200, 'Data fetched successfully', 'data', data);
+        return data;
     }
 
-    async update(id: string, dto: UpdateItemDto): Promise<Item | null> {
-        const res = await this.ItemRepository.findOneEntity(id);
-        if (!res) {
-            throw new NotFoundException(Constants.NOT_FOUND);
-        }
-        const data = await this.ItemRepository.updateEntity(id, dto);
-        if (!data) {
-            throw new BadRequestException(Constants.UPDATE_FAILED);
-        }
-        return ResponseUtils.successResponseHandler(200, 'Data updated successfully', 'data', data);
+    async updateWithBid(itemId: string, bidId: any): Promise<void> {
+        return await this.ItemRepository.updateWithBid(itemId, bidId);
     }
+
 }

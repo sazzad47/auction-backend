@@ -8,16 +8,13 @@ export class BidRepository<BidDocument extends Bid> {
 
     async createBid(bidderId: string, itemId: string, amount: number): Promise<Bid> {
         const createdBid = new this.model({
+            _id: new Types.ObjectId(),
             bidder: bidderId,
             item: itemId,
             amount,
         });
 
         return await createdBid.save();
-    }
-
-    async findHighestBid(itemId: string): Promise<Bid | null> {
-        return await this.model.findOne({ item: itemId }).sort({ amount: -1 }).exec();
     }
 
     async findUserBid(bidId: string, userId: string): Promise<Bid | null> {

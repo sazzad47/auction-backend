@@ -30,6 +30,6 @@ export class UsersService {
         if (!data) {
             throw new NotFoundException(Constants.NOT_FOUND);
         }
-        return ResponseUtils.successResponseHandler(200, 'Data fetched successfully', 'data', data);
+        return data;
     }
 }

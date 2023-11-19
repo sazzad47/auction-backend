@@ -20,29 +20,36 @@ export class BidService {
     private readonly BidRepository = new BidRepository(this.BidModel);
 
     async createBid(dto: CreateBidDto, userId: string): Promise<Bid> {
-        const {itemId, amount} = dto;
+        const { itemId, amount } = dto;
 
-        const [bidder, item, highestBid] = await Promise.all([
+        const [bidder, item, highestBidAmount] = await Promise.all([
             this.usersService.findOne(userId),
             this.itemService.findOne(itemId),
-            this.BidRepository.findHighestBid(itemId),
+            this.itemService.findHighestBidAmount(itemId),
         ]);
 
         if (!bidder || !item) {
             throw new NotFoundException(Constants.NOT_FOUND);
-        }
+        }  
 
-        if (!highestBid && amount < item.startPrice) {
-            throw new HttpException('Bid amount should be higher than start price', HttpStatus.BAD_REQUEST);
-        }
-
-        if (highestBid && amount <= highestBid.amount) {
-            throw new HttpException('Bid amount should be higher than current bid price', HttpStatus.BAD_REQUEST);
-        }
+        this.validateBidAmount(amount, item.startPrice, highestBidAmount);
 
         const newBid = await this.BidRepository.createBid(userId, itemId, amount);
+        await this.itemService.updateWithBid(itemId, newBid._id);
+
+        console.log('item', item)
+        console.log('highestBidAmount', highestBidAmount)
 
         return ResponseUtils.successResponseHandler(201, 'Bid created successfully!', 'data', newBid);
     }
 
+    private validateBidAmount(amount: number, startPrice: number, highestBidAmount: number | null): void {
+        if (!highestBidAmount && amount < startPrice) {
+            throw new HttpException('Bid amount should be higher than start price', HttpStatus.BAD_REQUEST);
+        }
+
+        if (highestBidAmount && amount <= highestBidAmount) {
+            throw new HttpException('Bid amount should be higher than current bid price', HttpStatus.BAD_REQUEST);
+        }
+    }
 }

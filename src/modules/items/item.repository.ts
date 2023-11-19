@@ -1,7 +1,6 @@
 import mongoose, { Model, Types } from 'mongoose';
 import { Item } from './schema/item.schema';
 import { CreateItemDto } from './dto/create-item.dto';
-import { UpdateItemDto } from './dto/update-item.dto';
 
 export class ItemRepository<ItemDocument extends Item> {
     constructor(private readonly model: Model<ItemDocument>) {}
@@ -20,11 +19,14 @@ export class ItemRepository<ItemDocument extends Item> {
             return null;
         }
 
-        return await this.model.findOne({ _id: id, isDeleted: false });
+        return await this.model.findOne({ _id: id }).populate('bids').exec();
     }
 
-    async updateEntity(id: string, data: UpdateItemDto): Promise<Item | null> {
-        return await this.model.findByIdAndUpdate(id, data, { new: true });
+    async updateWithBid(itemId: string, bidId: string): Promise<void> {
+        await this.model.updateOne(
+            { _id: itemId },
+            { $push: { bids: bidId } },
+        );
     }
 
     async findAll(
@@ -48,6 +50,22 @@ export class ItemRepository<ItemDocument extends Item> {
         const totalCount = await this.model.countDocuments(query);
 
         return { items, totalCount };
+    }
+
+    async findHighestBidAmount(itemId: string): Promise<number | null> {
+        const item = (await this.model
+            .findById(itemId)
+            .populate("bids")
+            // options: { sort: { amount: -1 }, limit: 1 },
+            .exec()) as { bids?: { amount: number }[] };
+
+            console.log('populateditem', item)
+
+        if (item && item.bids && item.bids.length > 0) {
+            return item.bids[0].amount;
+        }
+
+        return null;
     }
 
     async checkAndUpdateSoldStatus() {

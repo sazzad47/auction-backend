@@ -11,6 +11,7 @@ import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ItemModule } from './modules/items/item.module';
 import { DepositModule } from './modules/deposits/deposit.module';
+import { BidModule } from './modules/bids/bid.module';
 
 @Module({
     imports: [
@@ -27,6 +28,7 @@ import { DepositModule } from './modules/deposits/deposit.module';
         UsersModule,
         ItemModule,
         DepositModule,
+        BidModule
     
     ],
     controllers: [AppController],

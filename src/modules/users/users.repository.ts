@@ -47,4 +47,5 @@ export class UsersRepository<UsersDocument extends Users> {
             throw new Error(`Error finding entity by filter query: ${error.message}`);
         }
     }
+    
 }

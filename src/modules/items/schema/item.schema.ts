@@ -29,3 +29,4 @@ export class Item extends AbstractDocument {
 }
 
 export const ItemSchema = SchemaFactory.createForClass(Item);
+ItemSchema.index({ 'bids.amount': -1 });

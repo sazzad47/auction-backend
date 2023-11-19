@@ -23,6 +23,7 @@ export class DepositService {
                 deposit = await this.DepositRepository.updateDeposit(amount, userId);
             } else {
                 deposit = await this.DepositRepository.createDeposit(amount, userId);
+                
             }
 
             return ResponseUtils.successResponseHandler(201, 'Amount deposited successfully', 'data', deposit);
