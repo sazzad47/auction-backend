@@ -1,6 +1,6 @@
 import mongoose, { Model, Types } from 'mongoose';
-import { Users } from './schema/users.schema'; 
-import { CreateUsersDto } from './dto/create-users.dto'; 
+import { Users } from './schema/users.schema';
+import { CreateUsersDto } from './dto/create-users.dto';
 import CryptoUtils from 'src/utils/crypto.utils';
 
 export class UsersRepository<UsersDocument extends Users> {
@@ -47,5 +47,25 @@ export class UsersRepository<UsersDocument extends Users> {
             throw new Error(`Error finding entity by filter query: ${error.message}`);
         }
     }
-    
+
+    async updateWithBid(itemId: string, bidId: string): Promise<void> {
+        await this.model.updateOne({ _id: itemId }, { $push: { bids: bidId } });
+    }
+
+    async findLastBidTimestamp(userId: string): Promise<Date | null> {
+        const user = await this.model
+            .findById(userId)
+            .populate({
+                path: 'bids',
+                options: { sort: { createdAt: -1 }, limit: 1 },
+            })
+            .lean()
+            .exec();
+
+        if (!user || !user.bids || user.bids.length === 0) {
+            return null;
+        }
+
+        return user.bids[0].createdAt;
+    }
 }

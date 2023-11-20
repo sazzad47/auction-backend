@@ -21,7 +21,7 @@ export class Item extends AbstractDocument {
     @Prop({ default: false, nullable: true })
     sold?: boolean;
 
-    @Prop({ type: [{ type: Types.ObjectId, ref: 'Bid' }], nullable: true })
+    @Prop({ type: [{ type: Types.ObjectId }], nullable: true, ref: 'Bid' })
     bids: Bid[];
 
     @Prop({ type: Types.ObjectId, ref: 'Users' })

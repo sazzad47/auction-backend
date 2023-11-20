@@ -32,4 +32,20 @@ export class UsersService {
         }
         return data;
     }
+
+    async updateWithBid(itemId: string, bidId: any): Promise<void> {
+        return await this.usersRepository.updateWithBid(itemId, bidId);
+    }
+
+    async findLastBidTimestamp(userId: string): Promise<Date | null> {
+        try {
+            const lastBidTimestamp = await this.usersRepository.findLastBidTimestamp(userId);
+            if (lastBidTimestamp === null) {
+                throw new NotFoundException('User or bid not found.');
+            }
+            return lastBidTimestamp;
+        } catch (error) {
+            throw new NotFoundException('User or bid not found.');
+        }
+    }
 }

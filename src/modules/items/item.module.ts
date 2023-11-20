@@ -7,6 +7,8 @@ import JwtHelper from 'src/core/jwt/jwt.helper';
 import { JwtModule } from '@nestjs/jwt';
 import JwtConfigService from 'src/core/jwt/jwt-config.service';
 import { UsersSchema } from '../users/schema/users.schema';
+import { DepositService } from '../deposits/deposit.service';
+import { DepositSchema } from '../deposits/schema/deposit.schema';
 
 @Module({
     imports: [
@@ -16,9 +18,10 @@ import { UsersSchema } from '../users/schema/users.schema';
         MongooseModule.forFeature([
             { name: 'Item', schema: ItemSchema },
             { name: 'Users', schema: UsersSchema },
+            { name: 'Deposit', schema: DepositSchema },
         ]),
     ],
     controllers: [ItemController],
-    providers: [ItemService, JwtHelper],
+    providers: [ItemService, DepositService, JwtHelper],
 })
 export class ItemModule {}

@@ -1,4 +1,4 @@
-import mongoose, { Model, Types } from 'mongoose';
+import mongoose, { Model, Types, ClientSession } from 'mongoose';
 import { Item } from './schema/item.schema';
 import { CreateItemDto } from './dto/create-item.dto';
 
@@ -19,14 +19,11 @@ export class ItemRepository<ItemDocument extends Item> {
             return null;
         }
 
-        return await this.model.findOne({ _id: id }).populate('bids').exec();
+        return await this.model.findOne({ _id: id, sold: false }).populate('bids').exec();
     }
 
     async updateWithBid(itemId: string, bidId: string): Promise<void> {
-        await this.model.updateOne(
-            { _id: itemId },
-            { $push: { bids: bidId } },
-        );
+        await this.model.updateOne({ _id: itemId }, { $push: { bids: bidId } });
     }
 
     async findAll(
@@ -53,13 +50,13 @@ export class ItemRepository<ItemDocument extends Item> {
     }
 
     async findHighestBidAmount(itemId: string): Promise<number | null> {
-        const item = (await this.model
+        const item = await this.model
             .findById(itemId)
-            .populate("bids")
-            // options: { sort: { amount: -1 }, limit: 1 },
-            .exec()) as { bids?: { amount: number }[] };
-
-            console.log('populateditem', item)
+            .populate({
+                path: 'bids',
+                options: { sort: { amount: -1 }, limit: 1 },
+            })
+            .exec();
 
         if (item && item.bids && item.bids.length > 0) {
             return item.bids[0].amount;
@@ -68,15 +65,21 @@ export class ItemRepository<ItemDocument extends Item> {
         return null;
     }
 
-    async checkAndUpdateSoldStatus() {
+    async findUnsoldItemsWithBids(): Promise<Item[]> {
         const currentTime = new Date();
-        const itemsToUpdate = await this.model.find({
-            endTime: { $lte: currentTime },
-            sold: false,
-        });
 
-        if (itemsToUpdate.length > 0) {
-            await this.model.updateMany({ _id: { $in: itemsToUpdate.map((item) => item._id) } }, { sold: true });
-        }
+        return this.model
+            .find({
+                sold: false,
+                endTime: { $gt: currentTime },
+            })
+            .populate('bids')
+            .sort({ endTime: 1 })
+            .exec();
+    }
+
+    async markItemAsSold(item: any, session: ClientSession): Promise<void> {
+        item.sold = true;
+        await item.save({ session });
     }
 }
