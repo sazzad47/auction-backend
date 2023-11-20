@@ -9,6 +9,7 @@ import JwtConfigService from 'src/core/jwt/jwt-config.service';
 import { UsersSchema } from '../users/schema/users.schema';
 import { DepositService } from '../deposits/deposit.service';
 import { DepositSchema } from '../deposits/schema/deposit.schema';
+import { UsersService } from '../users/users.service';
 
 @Module({
     imports: [
@@ -22,6 +23,6 @@ import { DepositSchema } from '../deposits/schema/deposit.schema';
         ]),
     ],
     controllers: [ItemController],
-    providers: [ItemService, DepositService, JwtHelper],
+    providers: [ItemService, UsersService, DepositService, JwtHelper],
 })
 export class ItemModule {}

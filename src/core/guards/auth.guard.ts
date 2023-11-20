@@ -28,7 +28,7 @@ export class AuthGuard implements CanActivate {
             }
             const token = bearerToken.replace(bearer, '');
             const jwtPayload = await this.jwtHelper.verifyAccessToken(token);
-            const data = await this.usersRepository.findOneEntity(jwtPayload.userId);
+            const data = await this.usersRepository.findOneByFilterQuery({_id: jwtPayload.userId});
             if (!data || data instanceof Error) {
                 return false;
             }

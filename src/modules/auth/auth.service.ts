@@ -70,7 +70,7 @@ export class AuthService {
     async register(dto: RegisterAuthDto, res: Response): Promise<Users | Error> {
         const { email, password } = dto;
 
-        const isEmailExists = await this.usersRepository.findByEmailAddress(email);
+        const isEmailExists = await this.usersRepository.findOneByFilterQuery({ email: email });
         if (isEmailExists) {
             throw new HttpException('Email Already Exists', HttpStatus.BAD_REQUEST);
         }
@@ -104,7 +104,7 @@ export class AuthService {
             }
 
             const jwtPayload = await this.jwtHelper.verifyAccessToken(token);
-            const user = await this.usersRepository.findOneEntity(jwtPayload.userId);
+            const user = await this.usersRepository.findOneByFilterQuery({ _id: jwtPayload.userId });
             if (!user || user instanceof Error) {
                 throw new HttpException('Invalid request', HttpStatus.BAD_REQUEST);
             }

@@ -9,20 +9,21 @@ export class DepositRepository<DepositDocument extends Deposit> {
         return await this.model.findOne({ user: userId });
     }
 
-    async createDeposit( amount: number, userId: string): Promise<Deposit> {
+    async createDeposit(amount: number, userId: string, session: ClientSession): Promise<Deposit> {
         const deposit = new this.model({
             _id: new Types.ObjectId(),
             amount,
             user: userId,
         });
-        return await deposit.save();
+        await deposit.save({ session });
+        return deposit;
     }
-
-    async updateDeposit( amount: number, userId: string): Promise<Deposit | null> {
-        return await this.model.findOneAndUpdate(
+    
+    async updateDeposit(amount: number, userId: string, session: ClientSession): Promise<Deposit | null> {
+        return this.model.findOneAndUpdate(
             { user: userId },
             { $inc: { amount } },
-            { new: true },
+            { new: true, session }
         );
     }
 

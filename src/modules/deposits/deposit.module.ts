@@ -7,6 +7,7 @@ import JwtHelper from 'src/core/jwt/jwt.helper';
 import { JwtModule } from '@nestjs/jwt';
 import JwtConfigService from 'src/core/jwt/jwt-config.service';
 import { UsersSchema } from '../users/schema/users.schema';
+import { UsersService } from '../users/users.service';
 
 @Module({
     imports: [
@@ -19,6 +20,6 @@ import { UsersSchema } from '../users/schema/users.schema';
         ]),
     ],
     controllers: [DepositController],
-    providers: [DepositService, JwtHelper],
+    providers: [DepositService, UsersService, JwtHelper],
 })
 export class DepositModule {}

@@ -1,4 +1,4 @@
-import mongoose, { Model, Types } from 'mongoose';
+import mongoose, { Model, Types, ClientSession } from 'mongoose';
 import { Users } from './schema/users.schema';
 import { CreateUsersDto } from './dto/create-users.dto';
 import CryptoUtils from 'src/utils/crypto.utils';
@@ -19,37 +19,25 @@ export class UsersRepository<UsersDocument extends Users> {
         }
     }
 
-    async findOneEntity(id: string): Promise<Users | null> {
-        try {
-            if (!mongoose.Types.ObjectId.isValid(id)) {
-                return null;
-            }
-            return await this.model.findOne({ _id: id }).lean();
-        } catch (error) {
-            throw new Error(`Error finding entity: ${error.message}`);
-        }
-    }
-
-    async findByEmailAddress(email: string): Promise<Users | Error> {
-        try {
-            return await this.model.findOne({
-                email: email,
-            });
-        } catch (error) {
-            throw new Error(`Error finding entity by email address: ${error.message}`);
-        }
-    }
-
     async findOneByFilterQuery(query: any): Promise<Users | null> {
         try {
-            return await this.model.findOne({ ...query }).lean();
+            return await this.model.findOne({ ...query })
+                .populate([
+                    { path: 'deposit' },
+                    { path: 'bids' },
+                ])
+                .lean();
         } catch (error) {
             throw new Error(`Error finding entity by filter query: ${error.message}`);
         }
     }
 
-    async updateWithBid(itemId: string, bidId: string): Promise<void> {
-        await this.model.updateOne({ _id: itemId }, { $push: { bids: bidId } });
+    async updateWithDeposit(userId: string, depositId: string, session: ClientSession): Promise<void> {
+        await this.model.updateOne({ _id: userId }, { $set: { deposit: depositId } }, { session });
+    }
+
+    async updateWithBid(userId: string, bidId: string): Promise<void> {
+        await this.model.updateOne({ _id: userId }, { $push: { bids: bidId } });
     }
 
     async findLastBidTimestamp(userId: string): Promise<Date | null> {

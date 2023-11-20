@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { Model } from 'mongoose';
+import { Model, ClientSession } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Users } from './schema/users.schema';
 import { UsersRepository } from './users.repository';
@@ -26,15 +26,19 @@ export class UsersService {
     }
 
     async findOne(id: string): Promise<Users | null> {
-        const data = await this.usersRepository.findOneEntity(id);
+        const data = await this.usersRepository.findOneByFilterQuery({_id: id});
         if (!data) {
             throw new NotFoundException(Constants.NOT_FOUND);
         }
         return data;
     }
 
-    async updateWithBid(itemId: string, bidId: any): Promise<void> {
-        return await this.usersRepository.updateWithBid(itemId, bidId);
+    async updateWithDeposit(userId: string, depositId: any, session: ClientSession): Promise<void> {
+        return await this.usersRepository.updateWithDeposit(userId, depositId, session);
+    }
+
+    async updateWithBid(userId: string, bidId: any): Promise<void> {
+        return await this.usersRepository.updateWithBid(userId, bidId);
     }
 
     async findLastBidTimestamp(userId: string): Promise<Date | null> {
