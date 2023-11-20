@@ -37,12 +37,25 @@ export class ItemRepository<ItemDocument extends Item> {
             query.sold = sold;
         }
 
-        query.startTime = { $lte: new Date() };
+        const currentTime = new Date();
+        const currentHours = currentTime.getHours();
+        const currentMinutes = currentTime.getMinutes();
+
+        const formattedCurrentTime = `${currentHours.toString().padStart(2, '0')}:${currentMinutes
+            .toString()
+            .padStart(2, '0')}`;
+
+        query.startTime = { $lte: formattedCurrentTime };
 
         const items = await this.model
             .find(query)
             .skip((page - 1) * limit)
             .limit(limit)
+            .populate('bids')
+            .populate({
+                path: 'createdBy',
+                select: '-password -deposit', 
+            })
             .exec();
         const totalCount = await this.model.countDocuments(query);
 

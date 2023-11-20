@@ -24,15 +24,15 @@ export class BidService {
     async createBid(dto: CreateBidDto, userId: string): Promise<Bid> {
         const { itemId, amount } = dto;
 
-        const lastBidTimestamp = await this.usersService.findLastBidTimestamp(userId);
-        const currentTime = new Date();
-        const timeDifferenceInSeconds = lastBidTimestamp
-            ? Math.floor((currentTime.getTime() - lastBidTimestamp.getTime()) / 1000)
-            : 5; 
+        // const lastBidTimestamp = await this.usersService.findLastBidTimestamp(userId);
+        // const currentTime = new Date();
+        // const timeDifferenceInSeconds = lastBidTimestamp
+        //     ? Math.floor((currentTime.getTime() - lastBidTimestamp.getTime()) / 1000)
+        //     : 5; 
 
-        if (timeDifferenceInSeconds < 5) {
-            throw new HttpException('You can only place one bid every 5 seconds', HttpStatus.BAD_REQUEST);
-        }
+        // if (timeDifferenceInSeconds < 5) {
+        //     throw new HttpException('You can only place one bid every 5 seconds', HttpStatus.BAD_REQUEST);
+        // }
 
         const [bidder, item, highestBidAmount] = await Promise.all([
             this.usersService.findOne(userId),
