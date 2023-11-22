@@ -57,6 +57,7 @@ export class AuthService {
                 httpOnly: true,
                 path: '/api/v1/auth/access-token',
                 maxAge: 30 * 24 * 60 * 60 * 1000, // 30days
+                sameSite: 'none',
             });
 
             return {
