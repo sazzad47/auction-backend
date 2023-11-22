@@ -30,7 +30,7 @@ export class ItemRepository<ItemDocument extends Item> {
         sold?: boolean,
         page: number = 1,
         limit: number = 10,
-    ): Promise<{ items: Item[]; totalCount: number }> {
+    ): Promise<{ items: Item[]; remainingItems: number }> {
         const query: Record<string, any> = {};
 
         if (sold !== undefined) {
@@ -45,7 +45,10 @@ export class ItemRepository<ItemDocument extends Item> {
             .toString()
             .padStart(2, '0')}`;
 
-        query.startTime = { $lte: formattedCurrentTime };
+        if (sold === false) {
+            query.startTime = { $lt: formattedCurrentTime };
+            query.endTime = { $gt: formattedCurrentTime };
+        }
 
         const items = await this.model
             .find(query)
@@ -54,12 +57,13 @@ export class ItemRepository<ItemDocument extends Item> {
             .populate('bids')
             .populate({
                 path: 'createdBy',
-                select: '-password -deposit', 
+                select: '-password -deposit',
             })
             .exec();
         const totalCount = await this.model.countDocuments(query);
+        const remainingItems = totalCount - limit - items.length;
 
-        return { items, totalCount };
+        return { items, remainingItems };
     }
 
     async findHighestBidAmount(itemId: string): Promise<number | null> {
@@ -80,11 +84,17 @@ export class ItemRepository<ItemDocument extends Item> {
 
     async findUnsoldItemsWithBids(): Promise<Item[]> {
         const currentTime = new Date();
+        const currentHours = currentTime.getHours();
+        const currentMinutes = currentTime.getMinutes();
+
+        const formattedCurrentTime = `${currentHours.toString().padStart(2, '0')}:${currentMinutes
+            .toString()
+            .padStart(2, '0')}`;
 
         return this.model
             .find({
                 sold: false,
-                endTime: { $gt: currentTime },
+                endTime: { $lt: formattedCurrentTime },
             })
             .populate('bids')
             .sort({ endTime: 1 })

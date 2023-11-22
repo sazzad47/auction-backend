@@ -43,7 +43,6 @@ export class ItemService {
     async checkAndUpdateSoldStatus(): Promise<void> {
         // Fetch unsold items before starting the session
         const unsoldItems = await this.ItemRepository.findUnsoldItemsWithBids();
-
         // Check if there are unsold items
         if (unsoldItems.length === 0) {
             // No unsold items, no need to start the session or proceed further
@@ -65,9 +64,9 @@ export class ItemService {
                         await this.depositService.refundDeposit(bid.bidder._id, bid.amount, session);
                     }
 
-                    // Mark the item as sold
-                    await this.ItemRepository.markItemAsSold(item, session);
                 }
+                // Mark the item as sold
+                await this.ItemRepository.markItemAsSold(item, session);
             }
 
             // Commit the transaction
