@@ -15,6 +15,7 @@ async function bootstrap() {
         origin: true,
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
         credentials: true,
+        exposedHeaders: ["set-cookie"]
     });
 
     app.use(bodyParser.json({ limit: '100mb' }));
