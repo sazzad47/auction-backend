@@ -11,15 +11,11 @@ This is a simple web application built with React, Nodejs, TypeScript, Tailwind 
 
 ## Table of Contents
 
-- [Demo](#demo)
 - [Installation](#installation)
 - [Usage](#usage)
 - [Technologies Used](#technologies-used)
 - [Contributing](#contributing)
 
-## Demo
-
-You can see a live demo of the app here: https://main--keen-sunflower-01898a.netlify.app/
 
 ## Installation
 
